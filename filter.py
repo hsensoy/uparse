@@ -37,10 +37,10 @@ if __name__ == "__main__":
         parser.add_argument('outputfile', metavar='output', type=str, nargs=1,
                    help='Target CoNLL corpus file used to store clean and filtered CoNLL corpus')
         group = parser.add_mutually_exclusive_group()
-        group.add_argument('--wsj10', action='store_true')
-	group.add_argument('--wsj20', action='store_true')                   
-	group.add_argument('--wsj40', action='store_true')
-	group.add_argument('--wsj', action='store_true')
+        group.add_argument('--wsj10', action='store_true', help='Cleaned sentences of maximum length 10')
+	group.add_argument('--wsj20', action='store_true', help='Cleaned sentences of maximum length 20')                   
+	group.add_argument('--wsj40', action='store_true', help='Cleaned sentences of maximum length 40')
+	group.add_argument('--wsj', action='store_true', help='Cleaned sentences of full corpus')
 	args = parser.parse_args()
 	
 	print args

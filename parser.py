@@ -40,8 +40,8 @@ if __name__ == "__main__":
         parser.add_argument('foutput', metavar='output', type=str, nargs=1,
                    help='Model CoNLL corpus file including model dependency grapgs')
         group = parser.add_mutually_exclusive_group()
-        group.add_argument('--rhead', action='store_true')
-	group.add_argument('--lhead', action='store_true')
+        group.add_argument('--rhead', action='store_true',help="Right head parsing")
+	group.add_argument('--lhead', action='store_true',help="Left head parsing")
 	args = parser.parse_args()
 	
 	if args.rhead:
