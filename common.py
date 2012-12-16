@@ -97,14 +97,16 @@ class Metrics:
 		self._compute()
 		
 	def _compute(self):
-		if self.mNedge > 0:
-			self.dprecision = self.dNmatch * 1. /self.mNedge
-			self.drecall = self.dNmatch * 1. /self.gNedge
-			self.df1 = f1(self.dprecision,self.drecall)
+		if self.mNedge > 0 and self.gNedge > 0:
+			if self.dNmatch > 0:
+				self.dprecision = (self.dNmatch * 1.) /self.mNedge
+				self.drecall = (self.dNmatch * 1.) /self.gNedge
+				self.df1 = f1(self.dprecision,self.drecall)
 		
-			self.uprecision = self.uNmatch * 1. /self.mNedge
-			self.urecall = self.uNmatch * 1. /self.gNedge
-			self.uf1 = f1(self.uprecision,self.urecall)
+			if self.uNmatch > 0:
+				self.uprecision = (self.uNmatch * 1.) /self.mNedge
+				self.urecall = (self.uNmatch * 1.) /self.gNedge
+				self.uf1 = f1(self.uprecision,self.urecall)
 		
 		
 	def __repr__(self):

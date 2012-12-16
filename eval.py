@@ -11,13 +11,13 @@ def evaluate( fgold, fmodel, ignoreroot=True ):
 if __name__ == "__main__":
 	import argparse
 	parser = argparse.ArgumentParser(description='Evaluate two parsings')
-	parser.add_argument('goldfile', metavar='input', type=str, nargs=1,
+	parser.add_argument('goldfile', type=str,
                    help='Source CoNLL corpus file including gold dependency graphs')
-        parser.add_argument('modelfile', metavar='output', type=str, nargs=1,
+        parser.add_argument('modelfile', type=str,
                    help='Model CoNLL corpus file including model dependency grapgs')
         parser.add_argument('--ignoreroot', action='store_true')
 	args = parser.parse_args()
 	
 	print args
 	
-	evaluate(args.goldfile[0], args.modelfile[0], args.ignoreroot)
+	evaluate(args.goldfile, args.modelfile, args.ignoreroot)

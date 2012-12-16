@@ -1,39 +1,45 @@
 from common import dgiter,DependencyGraph
+import glob
+
+def alldgiter(iwildcard):
+	for source in glob.glob(iwildcard):
+		for dg in dgiter(source):
+			yield dg
             			            			
-def clone( source, target, dgmap=None, dgfilter=None ):
+def clone( iwildcard, target, dgmap=None, dgfilter=None ):
 	from itertools import ifilter,imap
 	with open(target,"w") as fp:
-		if dgmap:
-			if dgfilter:
-				fp.write("\n\n".join(str(dg) for dg in ifilter(dgfilter, imap( dgmap, dgiter(source) ))))
+			if dgmap:
+				if dgfilter:
+					fp.write("\n\n".join(str(dg) for dg in ifilter(dgfilter, imap( dgmap, alldgiter(iwildcard)))))
+				else:
+					fp.write("\n\n".join(str(dg) for dg in imap( dgmap, alldgiter(iwildcard))))
 			else:
-				fp.write("\n\n".join(str(dg) for dg in imap( dgmap, dgiter(source) )))
-		else:
-			if dgfilter:
-				fp.write("\n\n".join(str(dg) for dg in ifilter(dgfilter,  dgiter(source) )))
-			else:
-				fp.write("\n\n".join(str(dg) for dg in dgiter(source)))
+				if dgfilter:
+					fp.write("\n\n".join(str(dg) for dg in ifilter(dgfilter,  alldgiter(iwildcard))))
+				else:
+					fp.write("\n\n".join(str(dg) for dg in alldgiter(iwildcard)))
 					
-def cloneAsCoNLLn(source,target,n=None):
+def cloneAsCoNLLn(iwildcard,target,n=None):
 	if n:
-		clone(source, target, dgmap = DependencyGraph.filteredcopy, dgfilter=lambda dg: dg.length()<=n)	
+		clone(iwildcard, target, dgmap = DependencyGraph.filteredcopy, dgfilter=lambda dg: dg.length()<=n and dg.length() >= 2)	
 	else:
-		clone(source, target, dgmap = DependencyGraph.filteredcopy)
+		clone(iwildcard, target, dgmap = DependencyGraph.filteredcopy)
 		
-def cloneAsCoNLL10(source,target):
-	cloneAsCoNLLn(source,target,10)
+def cloneAsCoNLL10(iwildcard,target):
+	cloneAsCoNLLn(iwildcard,target,10)
 	
-def cloneAsCoNLL20(source,target):
-	cloneAsCoNLLn(source,target,20)
+def cloneAsCoNLL20(iwildcard,target):
+	cloneAsCoNLLn(iwildcard,target,20)
 	
-def cloneAsCoNLL40(source,target):
-	cloneAsCoNLLn(source,target,40)
+def cloneAsCoNLL40(iwildcard,target):
+	cloneAsCoNLLn(iwildcard,target,40)
 	
 if __name__ == "__main__":
 	import argparse
 	parser = argparse.ArgumentParser(description='Cleanup & Filter CoNLL corpus')
-	parser.add_argument('inputfile', metavar='input', type=str, nargs=1,
-                   help='Source CoNLL corpus file including one or more dependency graphs')
+	parser.add_argument('inputwildcard', type=str,
+                   help='File wildcard showing CoNLL corpus file(s) including one or more dependency graphs')
         parser.add_argument('outputfile', metavar='output', type=str, nargs=1,
                    help='Target CoNLL corpus file used to store clean and filtered CoNLL corpus')
         group = parser.add_mutually_exclusive_group()
@@ -46,10 +52,10 @@ if __name__ == "__main__":
 	print args
 	
 	if args.wsj10:
-		cloneAsCoNLL10(args.inputfile[0], args.outputfile[0])
+		cloneAsCoNLL10(args.inputwildcard, args.outputfile[0])
 	elif args.wsj20:
-		cloneAsCoNLL20(args.inputfile[0], args.outputfile[0])
+		cloneAsCoNLL20(args.inputwildcard, args.outputfile[0])
 	elif args.wsj40:
-		cloneAsCoNLL40(args.inputfile[0], args.outputfile[0])
+		cloneAsCoNLL40(args.inputwildcard, args.outputfile[0])
 	elif args.wsj:
-		cloneAsCoNLL(args.inputfile[0], args.outputfile[0])
+		cloneAsCoNLL(args.inputwildcard, args.outputfile[0])
