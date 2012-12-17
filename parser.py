@@ -3,30 +3,26 @@ from common import dgiter, DependencyGraph
 def rhead(dg):
 	l = dg.length()
 	
-	parsed = DependencyGraph()
-	for n in dg.nodeiter():
+	parsed = dg.copy()
+	for n in parsed.nodeiter():
 		if n._id < l:
 			n.setHead(n._id + 1)
 		else:
 			n.setHead(0)
 			
-		parsed.addNode(n)
-		
-	return dg
+	return parsed
 	
 def lhead(dg):
 	l = dg.length()
 	
-	parsed = DependencyGraph()
-	for n in dg.nodeiter():
+	parsed = dg.copy()
+	for n in parsed.nodeiter():
 		if n._id > 1:
 			n.setHead(n._id - 1)
 		else:
 			n.setHead(0)
 			
-		parsed.addNode(n)
-		
-	return dg
+	return parsed
 			
 def parse_and_store(finput, foutput, model = rhead):
 	with open(foutput,"w") as fp:

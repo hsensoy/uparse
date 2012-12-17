@@ -13,7 +13,7 @@ class Sequence:
 		return self._value
 		
 dgseq = Sequence()
-punct = ["A$", "C$", "$", "#", ".", ",", "?", "/", "(", ":"]
+punct = ["A$", "C$", "$", "#", ".", ",", "?", "/", "(",":"]
 NONE_STR='_'
 from string import Template
 _CoNLL2007Template = Template('\t'.join(('$id','$form','$lemma','$cpostag','$postag','$feats','$head','$deprel','$phead','$pdeprel')))
@@ -30,21 +30,16 @@ class CoNLL2007Node:
 		self._deprel = deprel
 		self._phead = phead
 		self._pdeprel = pdeprel
+
+	def postag(self):
+		return self._cpostag if self._cpostag else self._postag
 		
 	def setId(self, id):
 		self._id = id
 	
-	def decrementId(self):
-		if self._id:
-			self._id -= 1
-	
 	def setHead(self, head):
 		self._head = head
 		
-	def decrementHead(self):
-		if self._head:
-			self._head -= 1
-			
 	@classmethod
 	def byline(cls, line):
 		t = [ t if t != '_' else None for t in line.split('\t')]
@@ -63,7 +58,7 @@ class CoNLL2007Node:
 
 Node = CoNLL2007Node
 
-_metrics = Template('($type)\tPrecision: $precision Recall: $recall F1: $f1')
+_metrics = '\n%s Link Accuracy\n\tPrecision: %.3f\n\tRecall: %.3f \n\tF1: %.3f\n\tTotal number of links: %d\n\tNumber of total matched links: %d'
 f1 = lambda p,r: 2*(p*r)/(p+r)
 class Metrics:
 	def __init__(self, ignoreroot):
@@ -81,6 +76,12 @@ class Metrics:
 		self.uprecision = None
 		self.urecall = None
 		self.uf1 = None
+
+		self.underestpostag = {}
+		self.overestpostag = {}
+		
+		self.underestform = {}
+		self.overestform = {}
 		
 		self._compute()
 		
@@ -90,7 +91,7 @@ class Metrics:
 		
 		self.gNedge += len(gedges)
 		self.mNedge += len(medges)
-		
+
 		self.dNmatch += len(gedges.intersection(medges))
 		self.uNmatch += sum ( 1 if (ge in medges) or ( (ge[1],ge[0]) in medges ) else 0 for ge in gedges )
 		
@@ -110,9 +111,14 @@ class Metrics:
 		
 		
 	def __repr__(self):
-		return _metrics.substitute(type='Directed', precision=self.dprecision, recall=self.drecall, f1=self.df1)+'\n'+ _metrics.substitute(type='Undirected', precision=self.uprecision, recall=self.urecall, f1=self.uf1)
-		
-		 
+		return _metrics%('Directed',self.dprecision, self.drecall, self.df1, self.gNedge, self.dNmatch)+'\n'+ _metrics%('Undirected', self.uprecision, self.urecall,self.uf1,self.gNedge, self.uNmatch)
+
+
+ATTACH_TO_ROOT = 'A_T_R'
+ATTACH_TO_PARENT = 'A_T_P'
+ATTACH_TO_NEXT_FIRST = 'A_T_N_F'
+ATTACH_TO_PRIOR_FIRST = 'A_T_P_F'
+DONT_ATTACH = 'ORPHAN'
 class DependencyGraph:
 	def __init__(self,id = None):
 		if id:
@@ -120,39 +126,74 @@ class DependencyGraph:
 		else:
 			self._dgid = dgseq.nextval()
 		self._nodes = []
-		self._n = 0
 		
 	def addNode(self, node):
-		self._n += 1
 		self._nodes.append(node)
 		
 	def nodeiter(self):
 		for n in self._nodes:
 			yield n
 		
-	def removeNode(self, ridx):
-		#print "Removing node %d"%ridx
-		for i, n in enumerate(self._nodes):
-			if ridx < n._id:
-				n.decrementId()
-			elif ridx == n._id:
-				ri = i
-				
-			if ridx < n._head:
-				n.decrementHead() 
-			elif ridx == n._head:
-				n.setHead(None)
-				
-		del self._nodes[ri]
+	def removeall(self, rnodes, strategy=ATTACH_TO_PRIOR_FIRST):
+		for n in self.nodeiter():
+			if n._head == 0:
+				n.hnode = None
+			else:
+				n.hnode = self._nodes[n._head - 1]
+	
+		for rn in rnodes:
+			idx = None
+			attachments = []
+			for i in range(self.length()):
+				if self._nodes[i]._id == rn._id:
+					idx = i
+				if self._nodes[i]._head == rn._id:
+					attachments.append(i)
+
+			if strategy == ATTACH_TO_PARENT:
+				for i in attachments:
+					self._nodes[i].hnode = self._nodes[idx].hnode
+			elif strategy == ATTACH_TO_NEXT_FIRST:
+				for i in attachments:
+					if i != self.length() - 1:
+						self._nodes[i].hnode = self._nodes[i+1]
+					else:
+						self._nodes[i].hnode = self._nodes[i - 1]
+			elif strategy == ATTACH_TO_PRIOR_FIRST:
+				for i in attachments:
+					if i != 0:
+						self._nodes[i].hnode = self._nodes[i - 1]
+					else:
+						self._nodes[i].hnode = self._nodes[i + 1]
+
+			del self._nodes[idx]
+
+
+		for i, n in enumerate(self.nodeiter()):
+			n.setId(i+1)
+		
+		for n in self.nodeiter():
+			if n.hnode is None:
+				n.setHead(0)
+			else:
+				n.setHead( n.hnode._id )
 			
+			#if strategy == ATTACH_TO_ROOT:
+				#n.setHead(0)
+			#elif strategy == ATTACH_TO_PARENT:
+				#n.setHead(self._nodes[ri]._head)
+			#else:
+				#n.setHead(None)
+				
 	def length(self):
-		return self._n
+		return len(self._nodes)
 	
 	def copy(self):
+		import copy
 		cpy = DependencyGraph()
 		
 		for n in self._nodes:
-			cpy.addNode(n)
+			cpy.addNode(copy.deepcopy(n))
 			
 		return cpy
 		 
@@ -160,8 +201,7 @@ class DependencyGraph:
 	def filteredcopy(cls, dg):
 		copydg = dg.copy()
 		from itertools import ifilter
-		for rnode in ifilter( lambda n: n._form in punct or n._deprel == 'P', dg._nodes ):
-			copydg.removeNode(rnode._id)
+		copydg.removeall([rnode for rnode in ifilter( lambda n: n._form.upper() in punct or n._deprel == 'P', dg._nodes )])
 			
 		return copydg
 		
@@ -171,10 +211,10 @@ class DependencyGraph:
 	def edgeset(self, ignoreroot):
 		from sets import Set
 		
-		return Set(( n._head if n._head != '_' else 0, n._id) for n in self._nodes if n._head != 0 or not ignoreroot )
+		return Set(( n._head, n._id) for n in self._nodes if n._head != 0 or not ignoreroot )
 		
 	def __eq__(self, other):
-		pass
+		return all( gn._form == mn._form for gn, mn in zip(self.nodeiter(),other.nodeiter()))
 		
 def dgiter(filename):
 	dg = DependencyGraph()
@@ -187,3 +227,6 @@ def dgiter(filename):
                 		dg = DependencyGraph()
             		else:
             			dg.addNode( Node.byline(trimmed) )
+
+	if dg.length() > 0:
+		yield dg

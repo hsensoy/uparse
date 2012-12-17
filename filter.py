@@ -22,7 +22,7 @@ def clone( iwildcard, target, dgmap=None, dgfilter=None ):
 					
 def cloneAsCoNLLn(iwildcard,target,n=None):
 	if n:
-		clone(iwildcard, target, dgmap = DependencyGraph.filteredcopy, dgfilter=lambda dg: dg.length()<=n and dg.length() >= 2)	
+		clone(iwildcard, target, dgmap = DependencyGraph.filteredcopy, dgfilter=lambda dg: dg.length()<=n and dg.length() >= 1)	
 	else:
 		clone(iwildcard, target, dgmap = DependencyGraph.filteredcopy)
 		
@@ -59,3 +59,4 @@ if __name__ == "__main__":
 		cloneAsCoNLL40(args.inputwildcard, args.outputfile[0])
 	elif args.wsj:
 		cloneAsCoNLL(args.inputwildcard, args.outputfile[0])
+
