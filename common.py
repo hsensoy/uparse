@@ -138,7 +138,7 @@ class DependencyGraph:
 		for n in self._nodes:
 			yield n
 		
-	def removeall(self, rnodes, strategy=ATTACH_TO_PRIOR_FIRST):
+	def removeall(self, rnodes, strategy=ATTACH_TO_PARENT):
 		for n in self.nodeiter():
 			if n._head == 0:
 				n.hnode = None
