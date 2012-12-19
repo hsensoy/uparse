@@ -22,18 +22,21 @@ optional arguments:
 ======
 
 $ python2.7 eval.py -h
-usage: eval.py [-h] [--ignoreroot] goldfile modelfile
+usage: eval.py [-h] [--ignoreroot] [--minlength MINLENGTH] goldfile modelfile
 
 Evaluate two parsings
 
 positional arguments:
-  goldfile      Source CoNLL corpus file including gold dependency graphs
-  modelfile     Model CoNLL corpus file including model dependency grapgs
+  goldfile              Source CoNLL corpus file including gold dependency
+                        graphs
+  modelfile             Model CoNLL corpus file including model dependency
+                        grapgs
 
 optional arguments:
-  -h, --help    show this help message and exit
+  -h, --help            show this help message and exit
   --ignoreroot
-
+  --minlength MINLENGTH
+                        Minimum sentence length to be considered in evaluation
 ======
 
 $ python2.7 parser.py -h

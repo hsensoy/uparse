@@ -58,61 +58,65 @@ class CoNLL2007Node:
 
 Node = CoNLL2007Node
 
-_metrics = '\n%s Link Accuracy\n\tPrecision: %.3f\n\tRecall: %.3f \n\tF1: %.3f\n\tTotal number of links: %d\n\tNumber of total matched links: %d'
+_metrics = '\nAccuracy\n\tPrecision: %.4f\n\tRecall: %.4f \n\tF1: %.4f\n\tTotal Reference: %d\n\tTotal Model: %d\n\tNumber of total matchs: %d'
 f1 = lambda p,r: 2*(p*r)/(p+r)
+class Measure:
+	def __init__(self):
+		self.nreference = 0
+		self.nmodel = 0
+		self.nmatch = 0
+
+		self.precision = None
+		self.recall = None
+		self.f1 = None
+
+	def add(self, referenceset, modelset):
+		self.addcount(len(referenceset), len(modelset),len(modelset.intersection(referenceset)))
+
+	def addcount(self, _nreference, _nmodel, _nmatch):
+		self.nreference += _nreference
+		self.nmodel += _nmodel
+		self.nmatch += _nmatch
+
+		self._compute()
+		
+	
+	def _compute(self):
+		if self.nmodel > 0 and self.nreference > 0 and self.nmatch > 0:
+			self.precision = (self.nmatch* 1.) /self.nmodel
+			self.recall = (self.nmatch * 1.) /self.nreference
+			self.f1 = f1(self.precision,self.recall)
+	
+	def __repr__(self):
+		return _metrics%(self.precision, self.recall, self.f1, self.nreference, self.nmodel, self.nmatch)
+		
 class Metrics:
 	def __init__(self, ignoreroot):
 		self._ignoreroot = ignoreroot
-		self.gNedge = 0
-		self.mNedge = 0
+		self.directed = Measure()
+		self.undirected = Measure()
 		
-		self.dNmatch = 0
-		self.uNmatch = 0
-		
-		self.dprecision = None
-		self.drecall = None
-		self.df1 = None
-		
-		self.uprecision = None
-		self.urecall = None
-		self.uf1 = None
-
 		self.underestpostag = {}
 		self.overestpostag = {}
 		
 		self.underestform = {}
 		self.overestform = {}
-		
-		self._compute()
-		
+	
 	def add(self, golddg, modeldg):
 		gedges = golddg.edgeset(self._ignoreroot)
 		medges = modeldg.edgeset(self._ignoreroot)
-		
-		self.gNedge += len(gedges)
-		self.mNedge += len(medges)
 
-		self.dNmatch += len(gedges.intersection(medges))
-		self.uNmatch += sum ( 1 if (ge in medges) or ( (ge[1],ge[0]) in medges ) else 0 for ge in gedges )
+		self.directed.add(gedges, medges)
 		
-		self._compute()
+		nref = len(gedges)
+		nmodel = len(medges)
+		nmatch = sum ( 1 if (ge in medges) or ( (ge[1],ge[0]) in medges ) else 0 for ge in gedges )
+			
+		self.undirected.addcount( nref, nmodel, nmatch)
 		
-	def _compute(self):
-		if self.mNedge > 0 and self.gNedge > 0:
-			if self.dNmatch > 0:
-				self.dprecision = (self.dNmatch * 1.) /self.mNedge
-				self.drecall = (self.dNmatch * 1.) /self.gNedge
-				self.df1 = f1(self.dprecision,self.drecall)
-		
-			if self.uNmatch > 0:
-				self.uprecision = (self.uNmatch * 1.) /self.mNedge
-				self.urecall = (self.uNmatch * 1.) /self.gNedge
-				self.uf1 = f1(self.uprecision,self.urecall)
-		
-		
+
 	def __repr__(self):
-		return _metrics%('Directed',self.dprecision, self.drecall, self.df1, self.gNedge, self.dNmatch)+'\n'+ _metrics%('Undirected', self.uprecision, self.urecall,self.uf1,self.gNedge, self.uNmatch)
-
+		return "Directed: "+str(self.directed)+"\n"+"Undirected: "+str(self.undirected)
 
 ATTACH_TO_ROOT = 'A_T_R'
 ATTACH_TO_PARENT = 'A_T_P'
@@ -215,18 +219,4 @@ class DependencyGraph:
 		
 	def __eq__(self, other):
 		return all( gn._form == mn._form for gn, mn in zip(self.nodeiter(),other.nodeiter()))
-		
-def dgiter(filename):
-	dg = DependencyGraph()
-	with open(filename) as fp:
-		for line in fp:
-			trimmed = line.strip()
-		
-			if len(trimmed) == 0:
-                		yield dg
-                		dg = DependencyGraph()
-            		else:
-            			dg.addNode( Node.byline(trimmed) )
 
-	if dg.length() > 0:
-		yield dg

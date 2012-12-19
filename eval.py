@@ -1,9 +1,11 @@
-from common import dgiter, Metrics
+from common import Metrics, Measure
+from corpus import idg, itree, isdgcorpus
 import warnings
-def evaluate( fgold, fmodel, ignoreroot=True,minlength=1 ):
+
+def evaluateDG( fgold, fmodel, ignoreroot=True,minlength=1 ):
 	m = Metrics(ignoreroot)
 	
-	for dggold,dgmodel in zip(dgiter(fgold), dgiter(fmodel)):
+	for dggold,dgmodel in zip( idg(fgold), idg(fmodel)):
 		if dggold.length() >= minlength:
 			if not dggold.__eq__(dgmodel):
 				warnings.warn("Two sentences are not equal %s %s"%(str(dggold),str(dgmodel)))
@@ -11,7 +13,25 @@ def evaluate( fgold, fmodel, ignoreroot=True,minlength=1 ):
 			m.add(dggold, dgmodel)
 	
 	print str(m)
+
+def evaluateTree( fgold, fmodel,minlength=1 ):
+	measure = Measure()
 	
+	with open(fgold) as g_fp, open(fmodel) as m_fp:
+		for g_line, m_line in zip( g_fp, m_fp ):
+			g = g_line.strip().split(':')
+			g_count = int(g[0])
+			exec( "g_set=set([%s])"%g[1] )
+			
+			m = m_line.strip().split(':')
+			m_count = int(m[0])
+			exec( "m_set=set([%s])"%m[1] )
+			
+			assert m_count == g_count
+			if m_count >= minlength and g_count >= minlength:
+				measure.add(g_set, m_set)
+	
+	print str(measure)
 	
 if __name__ == "__main__":
 	import argparse
@@ -26,5 +46,12 @@ if __name__ == "__main__":
 	args = parser.parse_args()
 	
 	print args
+
+	if isdgcorpus(args.goldfile) and isdgcorpus(args.modelfile):
+		evaluateDG(args.goldfile, args.modelfile, args.ignoreroot,args.minlength)
+	elif not isdgcorpus(args.goldfile) and not isdgcorpus(args.modelfile):
+		evaluateTree(args.goldfile, args.modelfile, args.minlength)
+	else:
+		warnings.warn("Both file should be of same corpus type")
 	
-	evaluate(args.goldfile, args.modelfile, args.ignoreroot,args.minlength)
+	
