@@ -1,4 +1,4 @@
-#!/Users/husnusensoy/Downloads/pypy-2.0-beta2/bin/pypy
+#!/usr/local/bin/pypy
 
 import json
 import sys
@@ -12,8 +12,9 @@ parser = argparse.ArgumentParser(
     description='Retag the leaf words with the given tags given in file')
 parser.add_argument('file', metavar='file', type=str, nargs='+',
                     help='Sentence to be retaged')
-parser.add_argument("--noextendedtag",help="Remove extended tags",action="store_true")
-parser.add_argument('--tagfile', type=str, default='ws+f.enw.kmeans100.gz', help="Tag file to be used")
+parser.add_argument("--noextendedtag", help="Remove extended tags", action="store_true")
+parser.add_argument('--preterminaltagfile', type=str, default=None, help="Tag file to be used")
+parser.add_argument('--othertagstrategy', type=str, choices=[None, "SIMPLE"], default=None, help="What to do with non-preterminal tags")
 
 args = parser.parse_args()
 
@@ -28,17 +29,25 @@ def retag(jtree, tagdict):
         if args.noextendedtag:
             subtree = [jtree[0].split('+')[0], jtree[1]]
         else:
-            subtree = [tagdict[jtree[1]], jtree[1]]
+            if tagdict:
+                subtree = [tagdict[jtree[1]], jtree[1]]
+            else:
+                subtree = [jtree[0], jtree[1]]
+
     else:
-        subtree = [jtree[0]]
+        if args.othertagstrategy == "SIMPLE":
+            subtree = ["X"]
+        else:
+            subtree = [jtree[0]]
+
         for leaf in jtree[1:]:
             subtree.append(retag(leaf, tagdict))
 
     return subtree
 
 #print args.file[0]
-if not args.noextendedtag:
-    tags = upos_map(args.tagfile)
+if not args.noextendedtag and args.preterminaltagfile:
+    tags = upos_map(args.preterminaltagfile, './data/upos/wsj.words.gz')
 else:
     tags = None
 

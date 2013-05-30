@@ -32,7 +32,7 @@ if ext != ".json":
     sys.stderr.write("Unexpected file extension %s\n" % (ext))
     sys.exit(1)
 
-with open("%s.dev" % root, "w") as devp, open("%s.key" % root, "w") as keyp, open("%s.train" % root, "w") as trainp:
+with open("%s.l%d.dev" % (root,args.maxlength), "w") as devp, open("%s.l%d.key" % (root,args.maxlength), "w") as keyp, open("%s.l%d.train" % (root,args.maxlength), "w") as trainp:
     for s in sentence_lst[:ntrain]:
         trainp.write(s)
 

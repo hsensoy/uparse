@@ -76,7 +76,7 @@ PCFG
 
 ./treetransform.py  --brush --cnf ./data/treebank/treebank.mrg > ./data/json/_penntreebank.json
 ./retag.py --noextendedtag ./data/json/_penntreebank.json > ./data/json/penntreebank.json
-./retag.py --tagfile  ./data/json/_penntreebank.json > ./data/json/penntreebank.json
+./retag.py --tagfile ./data/upos/ws.100.gz ./data/nlp/treebank/treebank-2.0/json/wsj/wsj.json > ./data/nlp/treebank/treebank-2.0/json/wsj/wsj.ws.100.json
 ./split.py --tagged --maxlength 40 0.80 ./data/nlp/treebank/treebank-2.0/json/wsj/wsj.json
 ./count_cfg_freq.py ./data/nlp/treebank/treebank-2.0/json/wsj/wsj.train > penntreebank.counts
 ./pcfg_parse.py --parallel 8 penntreebank.counts ./data/nlp/treebank/treebank-2.0/json/wsj/wsj.dev > ./data/nlp/treebank/treebank-2.0/json/wsj/wsj.p1.out

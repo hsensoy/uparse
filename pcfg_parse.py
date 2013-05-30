@@ -228,7 +228,7 @@ if __name__ == "__main__":
             for i, line in enumerate(fp,start=1):
                 tree = parse(json.loads(line))
 
-                sys.stderr.write("%d out of %d completed so far\n"%(i, nsentence))
+                #sys.stderr.write("%d out of %d completed so far\n"%(i, nsentence))
 
                 if not tree:
                     sys.stdout.write("#####\n")
@@ -242,7 +242,7 @@ if __name__ == "__main__":
         with open(args.file) as fp:
             for i, tree in enumerate(pool.imap(parse, [json.loads(line) for line in fp], chunksize=1)):
 
-                sys.stderr.write("%d out of %d completed so far\n"%(i, nsentence))
+                #sys.stderr.write("%d out of %d completed so far\n"%(i, nsentence))
                 if not tree:
                     sys.stdout.write("#####\n")
                 else:
