@@ -25,6 +25,6 @@ maltbundle.$(TASK_IDENTIFIER).task: maltbundle.tar.gz
 # Run your experiment
 result.$(TASK_IDENTIFIER).tar.gz: ${DEV} maltbundle.$(TASK_IDENTIFIER).task
 	make -C maltbundle.$(TASK_IDENTIFIER).task/bundle DEV=../../${DEV} TRAIN=../../${TRAIN} TEST=../../${TEST}
-	rm -ri maltbundle.$(TASK_IDENTIFIER).task
+	rm -r maltbundle.$(TASK_IDENTIFIER).task
 	mv -n result.tar.gz $@
 
