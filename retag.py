@@ -47,7 +47,7 @@ def retag(jtree, tagdict):
 
 #print args.file[0]
 if not args.noextendedtag and args.preterminaltagfile:
-    tags = upos_map(args.preterminaltagfile, './data/upos/wsj.words.gz')
+    tags = upos_map(args.preterminaltagfile, '../data/upos/wsj.words.gz')
 else:
     tags = None
 

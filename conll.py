@@ -129,9 +129,9 @@ if __name__ == "__main__":
         raise Exception("--tagmode random requires tagfile to be set")
 
     if args.tagfile:
-        tags = upos_map(args.tagfile, './data/upos/wsj.words.gz')
+        tags = upos_map(args.tagfile, '../data/upos/wsj.words.gz')
 
-        if args.random:
+        if args.tagmode == 'random':
             tagset = [t for t in set(tags.values())]
             import random
 
