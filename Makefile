@@ -1,7 +1,8 @@
 TASK_IDENTIFIER=gold
 TRANSFORMOPT=
 
-CONLL_DIR=/home/ubuntu/data/nlp/treebank/treebank-2.0/combined/conll
+#CONLL_DIR=/home/ubuntu/data/nlp/treebank/treebank-2.0/combined/conll
+CONLL_DIR=/Users/husnusensoy/uparse/data/nlp/treebank/treebank-2.0/combined/conll
 
 DEV=conll.$(TASK_IDENTIFIER).dev
 TRAIN=conll.$(TASK_IDENTIFIER).train

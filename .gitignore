@@ -3,8 +3,12 @@
 *.dev
 *.test
 
+# Intermediate Files
+*.counts
+
 # Result Files
 result.*.gz
+*.eval
 
 # Compiled Python
 *.pyc
