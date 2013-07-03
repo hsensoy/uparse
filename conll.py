@@ -113,8 +113,10 @@ if __name__ == "__main__":
                         help="Tag file to be used. Only valid when used with --tagmode tagfile|random")
 
     parser.add_argument('--formmode', type=str, default='nochange',
-                        choices=['nochange', 'remove'],
+                        choices=['nochange', 'formfile', 'remove'],
                         help="Form manipulation operation on corpus")
+    parser.add_argument('--formfile', type=str, default=None,
+                        help="Form file to be used. Only valid when used with --formmode formfile")
 
     args = parser.parse_args()
 
@@ -134,6 +136,10 @@ if __name__ == "__main__":
         if args.tagmode == 'random':
             tagset = [t for t in set(tags.values())]
             import random
+
+    if args.formfile:
+        forms = upos_map(args.formfile, '../data/upos/wsj.words.gz')
+	
 
     if args.file:
         # TODO: Fix this part.
@@ -173,6 +179,8 @@ if __name__ == "__main__":
 
                                 if args.formmode == 'nochange':
                                     pass
+				elif args.formmode == 'formfile':
+				    word._form = forms[word._form]
                                 elif args.formmode == 'remove':
                                     word._form = None
 

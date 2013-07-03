@@ -1,0 +1,10 @@
+# Corpus Files
+*.train
+*.dev
+*.test
+
+# Result Files
+result.*.gz
+
+# Compiled Python
+*.pyc
