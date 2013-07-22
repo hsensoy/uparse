@@ -17,16 +17,9 @@ class Subs():
 
             self.substitutes.append((substitute, float(logprob)))
 
-    def __repr__(self):
-        import json
 
-        return json.dumps(self.__dict__)
-
-    def __str__(self):
-        return self.__repr__()
-
-    def best(self):
-        return self.substitutes[0][0]
+    def topN(self, n=1):
+        return self.substitutes[:n]
 
 
 class SubsSentence(list):
@@ -51,14 +44,28 @@ def subssentiter(file="/Users/husnusensoy/uparse/data/upos/wsj.sub.gz"):
 
 if __name__ == "__main__":
     from conll import ConLLiter
-    counter = 0
-    for subs, conll in izip(subssentiter(), ConLLiter()):
-        if not any([c == s for c, s in zip(conll.sentence(), subs.orginal())]):
-            print subs
-            print conll
+    import argparse
 
+    parser = argparse.ArgumentParser(
+        description='CoNLL file transformer')
+    parser.add_argument('--directory', help='CoNLL directory to read')
+    parser.add_argument('--extension', default='.dp', help='CoNLL file extension to read')
+
+    args = parser.parse_args()
+    counter = 0
+    for subs, (conll,_) in izip(subssentiter(), ConLLiter(directory=args.directory, extension=args.extension)):
+        connsent = conll.sentence()
+        subssent = subs.orginal()
+        if not any([c == s for c, s in zip(connsent, subssent)]):
             break
         else:
+            for c, s in zip(conll, subs):
+                c._form = s.best()
+
+                sys.stdout.write(str(c))
+                sys.stdout.write("\n")
+
+            sys.stdout.write("\n")
             counter += 1
 
     sys.stderr.write("Total of %d sentences processed\n"%counter)

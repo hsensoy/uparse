@@ -1,0 +1,27 @@
+TASK_IDENTIFIER=german
+TRANSFORMOPT=
+
+EMNLPDIR=/Users/husnusensoy/Desktop/emnlp
+DEV=$(EMNLPDIR)/sprml/GERMAN_SPMRL/gold/conll/dev/dev.German.gold.conll
+TRAIN=$(EMNLPDIR)/sprml/GERMAN_SPMRL/gold/conll/train/train.German.gold.conll
+TEST=$(EMNLPDIR)/sprml/GERMAN_SPMRL/gold/conll/train5k/train5k.German.gold.conll
+
+all: result.$(TASK_IDENTIFIER).tar.gz
+
+# $(DEV) $(TRAIN) $(TEST): ${CONLL_DIR}
+#	./conll.py --directory ${CONLL_DIR} ${TRANSFORMOPT} --section 2-21 > ${TRAIN}
+#	./conll.py --directory ${CONLL_DIR} ${TRANSFORMOPT} --section 22 > ${DEV}
+#	./conll.py --directory ${CONLL_DIR} ${TRANSFORMOPT} --section 23 > ${TEST}
+
+# Extract maltparser, maltoptimizer, and malteval
+maltbundle.$(TASK_IDENTIFIER).task: maltbundle.tar.gz
+	rm -rf $@
+	mkdir $@
+	tar -xzvf maltbundle.tar.gz -C $@
+
+# Run your experiment
+result.$(TASK_IDENTIFIER).tar.gz: ${DEV} maltbundle.$(TASK_IDENTIFIER).task
+	make -C maltbundle.$(TASK_IDENTIFIER).task/bundle DEV=${DEV} TRAIN=${TRAIN} TEST=${TEST}
+	rm -r maltbundle.$(TASK_IDENTIFIER).task
+	mv -n result.tar.gz $@
+

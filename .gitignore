@@ -2,6 +2,7 @@
 *.train
 *.dev
 *.test
+*.json
 
 # Intermediate Files
 *.counts

@@ -3,6 +3,7 @@ from itertools import izip
 import sys
 from subs import subssentiter
 from upos_map import upos_map
+import os
 
 __author__ = 'husnusensoy'
 
@@ -104,6 +105,7 @@ class ConLLReader(Reader):
                 tokens.append(CoNLLRecord.byline(row))
 
 
+
 def open2(filename):
     """
 
@@ -142,6 +144,8 @@ if __name__ == "__main__":
                         help="Tag manipulation operation on corpus")
     parser.add_argument('--tagfile', type=str, default=None,
                         help="Tag file to be used. Only valid when used with --tagmode tagfile|random")
+
+    parser.add_argument('--ambigious', action='store_true', default=False, help="Threat tags as ambigious by not using a dictionary")
 
     parser.add_argument('--formmode', type=str, default='nochange',
                         choices=['nochange', 'formfile', 'remove'],
