@@ -13,3 +13,5 @@ result.*.gz
 
 # Compiled Python
 *.pyc
+
+*.json
