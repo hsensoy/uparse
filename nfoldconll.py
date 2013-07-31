@@ -1,16 +1,16 @@
 #!/usr/local/bin/pypy
 import sys
 from conll import open2
+import os
 
 __author__ = 'husnusensoy'
 
 
 def foldgenerator(corpus, nfold):
-    n = len(corpus)
-
-    
-
-
+    # http://code.activestate.com/recipes/425397-split-a-list-into-roughly-equal-sized-pieces/
+    splitsize = 1.0/nfold*len(corpus)
+    for i in range(nfold):
+        yield corpus[int(round(i*splitsize)):int(round((i+1)*splitsize))]
 
 if __name__ == "__main__":
     import argparse
@@ -33,23 +33,23 @@ if __name__ == "__main__":
     with open2(args.file) as f:
         corpus = [sent for sent in f]
 
-    for train, test in foldgenerator(corpus, nfold = args.n):
-        pass
 
-    n = len(corpus) / args.n
     for i in range(args.n):
-        train = corpus[(i *)]
+        print >> sys.stderr, "Creating %d fold"%(i+1)
+        basefilename = os.path.splitext(os.path.basename(args.file))[0]
 
         train = Template(args.traintemplate)
         test = Template(args.testtemplate)
-
-        for s in B:
-            d[tuple(s.sentence())] = True
-
-        for s in A:
-            if not tuple(s.sentence()) in d:
-                for word in s:
-                    sys.stdout.write(str(word))
-                    sys.stdout.write("\n")
-
-                sys.stdout.write("\n")
+        
+        with open(train.substitute(orginalfile=basefilename, id=i), "w") as ftrain, open(test.substitute(orginalfile=basefilename,id=i),"w") as ftest:
+            for j, chunk in enumerate(foldgenerator(corpus,args.n)):
+                if i == j:
+                    for sentence in chunk:
+                        for w in sentence:
+                            print >> ftest, str(w)
+                        print >> ftest
+                else:
+                    for sentence in chunk:
+                        for w in sentence:
+                            print >> ftrain, str(w)
+                        print >> ftrain
