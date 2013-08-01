@@ -36,12 +36,13 @@ if __name__ == "__main__":
 
     for i in range(args.n):
         print >> sys.stderr, "Creating %d fold"%(i+1)
+        dirname = os.path.dirname(args.file)
         basefilename = os.path.splitext(os.path.basename(args.file))[0]
 
         train = Template(args.traintemplate)
         test = Template(args.testtemplate)
         
-        with open(train.substitute(orginalfile=basefilename, id=i), "w") as ftrain, open(test.substitute(orginalfile=basefilename,id=i),"w") as ftest:
+        with open(train.substitute(orginalfile=os.path.join(dirname,basefilename), id=i), "w") as ftrain, open(test.substitute(orginalfile=os.path.join(dirname,basefilename),id=i),"w") as ftest:
             for j, chunk in enumerate(foldgenerator(corpus,args.n)):
                 if i == j:
                     for sentence in chunk:
