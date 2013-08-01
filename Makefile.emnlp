@@ -1,10 +1,13 @@
-TASK_IDENTIFIER=german
+LANGUAGE=
+LANGUAGE_INITCAP=$(shell python initcap.py $(LANGUAGE))
+LANGUAGE_CAPITAL=$(shell echo $(LANGUAGE) | tr a-z A-Z)
+TASK_IDENTIFIER=$(LANGUAGE)
 TRANSFORMOPT=
 
-EMNLPDIR=/Users/husnusensoy/Desktop/emnlp
-DEV=$(EMNLPDIR)/sprml/GERMAN_SPMRL/gold/conll/dev/dev.German.gold.conll
-TRAIN=$(EMNLPDIR)/sprml/GERMAN_SPMRL/gold/conll/train/train.German.gold.conll
-TEST=$(EMNLPDIR)/sprml/GERMAN_SPMRL/gold/conll/train5k/train5k.German.gold.conll
+EMNLPDIR=/home/ubuntu/sprml/$(LANGUAGE_CAPITAL)_SPMRL/gold/conll
+DEV=$(EMNLPDIR)/dev/dev.$(LANGUAGE_INITCAP).gold.conll
+TRAIN=$(EMNLPDIR)/train/train.$(LANGUAGE_INITCAP).gold.exclusive.conll
+TEST=$(EMNLPDIR)/train5k/train5k.$(LANGUAGE_INITCAP).gold.conll
 
 all: result.$(TASK_IDENTIFIER).tar.gz
 
