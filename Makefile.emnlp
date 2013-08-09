@@ -7,7 +7,7 @@ TRANSFORMOPT=
 EMNLPDIR=/home/ubuntu/sprml/$(LANGUAGE_CAPITAL)_SPMRL/gold/conll
 DEV=$(EMNLPDIR)/dev/dev.$(LANGUAGE_INITCAP).gold.conll
 TRAIN=$(EMNLPDIR)/train/train.$(LANGUAGE_INITCAP).gold.exclusive.conll
-TRAIN5K=$(EMNLPDIR)/train5k/train5k.$(LANGUAGE_INITCAP).gold.conll
+TEST=$(EMNLPDIR)/train5k/train5k.$(LANGUAGE_INITCAP).gold.conll
 
 all: result.$(TASK_IDENTIFIER).tar.gz
 5-fold: result.$(TASK_IDENTIFIER).5-fold.tar.gz
@@ -20,13 +20,13 @@ maltbundle.$(TASK_IDENTIFIER).task: maltbundle.tar.gz
 
 # Run your experiment
 result.$(TASK_IDENTIFIER).tar.gz: ${DEV} maltbundle.$(TASK_IDENTIFIER).task
-	make -C maltbundle.$(TASK_IDENTIFIER).task/bundle DEV=${DEV} TRAIN=${TRAIN} TEST=${TRAIN5K}
+	make -C maltbundle.$(TASK_IDENTIFIER).task/bundle DEV=${DEV} TRAIN=${TRAIN} TEST=${TEST}
 	rm -r maltbundle.$(TASK_IDENTIFIER).task
 	mv -n result.tar.gz $@
 
 # Run your experiment
 result.$(TASK_IDENTIFIER).5-fold.tar.gz: ${DEV} maltbundle.$(TASK_IDENTIFIER).task
-	make -C maltbundle.$(TASK_IDENTIFIER).task/bundle DEV=${DEV} TRAIN=${TRAIN5K} 5-fold
+	make -C maltbundle.$(TASK_IDENTIFIER).task/bundle DEV=${DEV} TRAIN=${TEST} 5-fold
 	rm -r maltbundle.$(TASK_IDENTIFIER).task
 	mv -n result.tar.gz $@
 

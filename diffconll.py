@@ -11,9 +11,11 @@ if __name__ == "__main__":
         description='Extracts A-B')
     parser.add_argument('fileA', help='CoNLL file A')
     parser.add_argument('fileB', help='CoNLL file B')
+    parser.add_argument('--count', action='store_true', help='Just show number of overlapping sentence')
 
     args = parser.parse_args()
     d = dict()
+    count = 0
 
     with open2(args.fileA) as A, open2(args.fileB) as B:
         for s in B:
@@ -21,7 +23,14 @@ if __name__ == "__main__":
 
         for s in A:
             if not tuple(s.sentence()) in d:
-                for word in s:
-                    print >> sys.stdout, str(word)
+		if not args.count:
+                    for word in s:
+                        print >> sys.stdout, str(word)
+		
+                    print >> sys.stdout
+	    else:
+		count += 1
 
-                print >> sys.stdout
+    if args.count:
+	print >> sys.stderr, "Total number of overlapping sentences are %d"%count
+			
