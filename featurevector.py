@@ -1,10 +1,14 @@
 import csv
 import sys
 import math
+from matplotlib.pyplot import hist
 import numpy as np
+from scipy.spatial.distance import pdist
 from sklearn import preprocessing, metrics, grid_search
 from sklearn.cluster import KMeans, MiniBatchKMeans, AffinityPropagation, MeanShift, estimate_bandwidth, Ward
 from sklearn.cluster.dbscan_ import DBSCAN
+from sklearn.metrics import pairwise_distances
+from sklearn.preprocessing import StandardScaler
 
 VERBOSE = False
 __author__ = 'husnusensoy'
@@ -13,10 +17,13 @@ featureMatrix = None
 wordVector = None
 
 
-def reader(filename, verbose=VERBOSE, delimeter="\t"):
+def reader(filename, verbose=VERBOSE, delimeter="\t", nrows=1000):
     with open(filename, 'rb') as csvfile:
-        for line in csvfile:
+        for rownum, line in enumerate(csvfile, start=1):
             yield line.strip().split(delimeter)
+
+            if rownum == nrows:
+                break
 
 
 def csvreader(filename, samplebytes=1024, verbose=VERBOSE):
@@ -40,7 +47,8 @@ def csvreader(filename, samplebytes=1024, verbose=VERBOSE):
     return reader, csvfile, dialect
 
 
-def docluster(n, algorithm='kmeans', minibatch=True, showClusters=False, distance_metric='cosine'):
+def docluster(n=13, algorithm='kmeans', minibatch=True, showClusters=False, distance_metric='euclidean', eps_in=0.4,
+              MinPts_in=8):
     """
 
     :param n: Number of clusters
@@ -60,7 +68,9 @@ def docluster(n, algorithm='kmeans', minibatch=True, showClusters=False, distanc
                                 tol=1e-4, precompute_distances=True,
                                 verbose=0, n_jobs=3).fit(featureMatrix)
     elif algorithm == "DBSCAN":
-        clustering = DBSCAN(eps=0.95, min_samples=10, metric=distance_metric).fit(featureMatrix)
+
+        clustering = DBSCAN(eps=eps_in, min_samples=MinPts_in, metric=distance_metric).fit(featureMatrix)
+
     elif algorithm == "Hierarchical":
         clustering = Ward(n_clusters=n).fit(featureMatrix)
     elif algorithm == "StructuredHierarchical":
@@ -86,17 +96,28 @@ def docluster(n, algorithm='kmeans', minibatch=True, showClusters=False, distanc
         SUBSET_SIZE = 5000
         featureMatrix = featureMatrix[:SUBSET_SIZE]
         wordVector = wordVector[:SUBSET_SIZE]
-        clustering = AffinityPropagation(preference=-3, verbose=True).fit(featureMatrix)
+        clustering = AffinityPropagation(preference=-4, verbose=True).fit(featureMatrix)
         n_clusters_ = len(clustering.cluster_centers_indices_)
 
         print >> sys.stderr, "Estimated number of clusters are %d" % n_clusters_
 
     k_means_labels = clustering.labels_
 
-    print >> sys.stderr, "Calculating silhouette_score for %d" % (n)
-    ss = metrics.silhouette_score(featureMatrix, clustering.labels_, metric=distance_metric, sample_size=3500)
+    #print >> sys.stderr,clustering.__dict__
+    #print >> sys.stderr, "Calculating silhouette_score for %d" % (n)
 
-    print >> sys.stderr, "# of clusters: %d (silhouette_score: %.6f)" % (-1, ss)
+    try:
+        ss = metrics.silhouette_score(featureMatrix, clustering.labels_, metric='euclidean',
+                                      sample_size=min(3500, len(wordVector)))
+    except ValueError:
+        pass
+        ss = 0
+
+    #ncluster = len(set(k_means_labels)) - (1 if -1 in k_means_labels else 0)
+    ncluster = len( clustering.cluster_centers_indices_)
+
+    print >> sys.stderr, "eps=%f, MinPts=%d # of clusters: %d (silhouette_score: %.6f)" % (
+        eps_in, MinPts_in, ncluster, ss)
 
     if showClusters:
         groups = {}
@@ -113,6 +134,8 @@ def docluster(n, algorithm='kmeans', minibatch=True, showClusters=False, distanc
         with open("german.%s.cluster.json" % (algorithm), "wb") as fp:
             json.dump(groups, fp, indent=2)
 
+    return ss, ncluster
+
 
 def binned():
     #reader, pointer, dialect = csvreader("german.embeddings",verbose=True)
@@ -123,7 +146,7 @@ def binned():
 
     wordVector = []
     features = []
-    for record in reader("german.embeddings", verbose=True, delimeter="\t"):
+    for record in reader("german.embeddings", verbose=True, delimeter="\t", nrows=2000):
         word, featurelst = record[0], [float(f) for f in record[1:]]
 
         if VERBOSE:
@@ -133,6 +156,15 @@ def binned():
         wordVector.append(word)
 
     featureMatrix = np.array(features)
+    #featureMatrix = StandardScaler().fit_transform(featureMatrix)
+
+    #print featureMatrix
+    #print featureMatrix.shape
+    euclideandist = pairwise_distances(featureMatrix)
+
+    #print max(euclideandist.flatten())
+
+    #print euclideandist
 
     if VERBOSE:
         print >> sys.stderr, wordVector[1:10]
@@ -156,12 +188,20 @@ def binned():
     #for n in range(16,23):
     #    docluster(n,algorithm='kmeans')
 
-    docluster(n=19, algorithm='AffinityPropagation', showClusters=True)
+    from itertools import product
+
+    results = []
+    for eps, MinPts in product([5.5], [8]):
+        sil, n = docluster(algorithm='AffinityPropagation', showClusters=True, eps_in=eps, MinPts_in=MinPts)
+
+        results.append((sil, n, eps, MinPts))
+
+    print sorted(results, key=lambda x: x[0], reverse=True)
 
     #docluster(1,algorithm="MeanShift")
 
-
-binned()
+if __name__ == "__main__":
+    binned()
 #reader, pointer, dialect = csvreader("german.embeddings.tab",verbose=True)
 
 #pointer.close()
