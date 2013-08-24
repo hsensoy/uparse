@@ -129,6 +129,15 @@ def ConLLiter(directory, extension):
                     yield sentence, section
 
 
+def dump_corpus(file, corpus):
+    with open(file, "w") as fp:
+        for c in corpus:
+            for word in c:
+                print >> fp, str(word)
+
+            print >> fp
+
+
 if __name__ == "__main__":
     import argparse
 

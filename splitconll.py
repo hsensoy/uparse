@@ -1,19 +1,9 @@
 #!/usr/local/bin/pypy
-import csv
+
 import sys
-import math
-from conll import open2
+from conll import open2, dump_corpus
 
 __author__ = 'husnusensoy'
-
-
-def dump_corpus(file, corpus):
-    with open(file, "w") as fp:
-        for c in corpus:
-            for word in c:
-                print >> fp, str(word)
-
-            print >> fp
 
 
 def filename(basefilename, idx, count):
