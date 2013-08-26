@@ -25,7 +25,8 @@ class ConLLParsingException(Exception):
 
 
 class CoNLLRecord:
-    def __init__(self, id, form, lemma, cpostag, postag, feats, head, deprel, phead, pdeprel):
+    def __init__(self, id=None, form=None, lemma=None, cpostag=None, postag=None, feats=None, head=None, deprel=None,
+                 phead=None, pdeprel=None):
         self._id = None if id is None else int(id)        # integer
         self._form = form
         self._lemma = lemma
