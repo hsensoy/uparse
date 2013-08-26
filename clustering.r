@@ -1,6 +1,6 @@
 library(sqldf)
 library(fpc)
-TOPN = 40000
+TOPN = 80000
 german_embeddings <- read.delim("~/uparse/german.embeddings", nrows= TOPN,header=F,col.names=c("word","f1","f2","f3","f4","f5","f6","f7","f8","f9","f10","f11","f12","f13","f14","f15","f16","f17","f18","f19","f20","f21","f22","f23","f24","f25"),sep='\t',blank.lines.skip=TRUE,quote = "",colClasses=c("character",rep("numeric",25)))
 #german_embeddings@row.names = german.embeddings$word
 german_embeddings_features = subset(german_embeddings, select=c("f1","f2","f3","f4","f5","f6","f7","f8","f9","f10","f11","f12","f13","f14","f15","f16","f17","f18","f19","f20","f21","f22","f23","f24","f25"))
@@ -8,7 +8,8 @@ german_embeddings_features = subset(german_embeddings, select=c("f1","f2","f3","
 #german.embeddings.matrix = scale(german.embeddings)
 
 # DBSCAN Algorithm
-ds <- dbscan(german_embeddings_features, 0.4, MinPts=8,showplot=FALSE)
+d = dist(german_embeddings_features)
+ds <- dbscan(d, 0.4, MinPts=8,showplot=FALSE,method="dist")
 ncluster = max(ds$cluster)
 german_embeddings$cluster = predict(ds, german_embeddings_features, german_embeddings_features)
 german_embeddings_filtered= sqldf("select word,cluster from german_embeddings where cluster != 0 order by cluster, word")
@@ -30,17 +31,6 @@ s <- silhouette(cl$cluster,d)
 #plot(s)
 cl
 
-#km = kmeans(german.embeddings.featuresonly, centers=100, iter.max=300, nstart=20)
-
-#library(NbClust)
-#set.seed(1234)
-#df = scale(german.embeddings[-1])
-#nc <- NbClust(df, min.nc=10, max.nc=30,method="kmeans",index="silhouette")
-#nc
-
-#barplot(table(nc$Best.n[1,]), 
-#        xlab="Numer of Clusters", ylab="Number of Criteria",
-#        main="Number of Clusters Chosen by Criterias")
 
 wssplot <- function(data, nc=50, seed=1234){
   wss <- (nrow(data)-1)*sum(apply(data,2,var))

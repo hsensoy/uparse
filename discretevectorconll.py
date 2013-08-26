@@ -11,7 +11,7 @@ if __name__ == "__main__":
     parser.add_argument('file', help='CoNLL file to read')
     parser.add_argument('vectorfile', help='Vector file to be used')
     parser.add_argument('--target', type=str, default='FEATS',
-                        choices=['FEATS', 'LEMMA'],
+                        choices=['FEATS', 'LEMMA', 'TAG'],
                         help="CoNLL file field to be replaced/extended")
     parser.add_argument('--replace', action='store_true', default=False,
                         help="Replace/Extend the relevant field.")
@@ -30,14 +30,19 @@ if __name__ == "__main__":
             for word in sentence:
                 if word._form in vlookup:
                     if args.target == 'FEATS':
-                        if word._feats or args.replace:
-                            word._feats = word._feats + "|" + "|".join(
-                                ("F%d=%s" % (i, v) for i, v in enumerate(vlookup[word._form])))
-                        else:
+			if args.replace:
                             word._feats = "|".join(("F%d=%s" % (i, v) for i, v in enumerate(vlookup[word._form])))
-                    else:
+			else:
+                        	if word._feats:
+                            		word._feats = word._feats + "|" + "|".join(("F%d=%s" % (i, v) for i, v in enumerate(vlookup[word._form])))
+                        	else:
+					word._feats = "|".join(("F%d=%s" % (i, v) for i, v in enumerate(vlookup[word._form])))
+		    else:
                         assert len(vlookup[word._form]) == 1
-                        word._lemma = vlookup[word._form][0]
+			if args.target == 'TAG':	
+				word.setpostag(vlookup[word._form][0])
+			else:
+                        	word._lemma = vlookup[word._form][0]
                 print >> sys.stdout, str(word)
 
             print >> sys.stdout
