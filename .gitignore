@@ -3,6 +3,8 @@
 *.dev
 *.test
 *.json
+train5k.*
+dev.*
 
 # Intermediate Files
 *.counts
@@ -15,3 +17,4 @@ result.*.gz
 *.pyc
 
 *.json
+*.log

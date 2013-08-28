@@ -25,7 +25,8 @@ class ConLLParsingException(Exception):
 
 
 class CoNLLRecord:
-    def __init__(self, id, form, lemma, cpostag, postag, feats, head, deprel, phead, pdeprel):
+    def __init__(self, id=None, form=None, lemma=None, cpostag=None, postag=None, feats=None, head=None, deprel=None,
+                 phead=None, pdeprel=None):
         self._id = None if id is None else int(id)        # integer
         self._form = form
         self._lemma = lemma
@@ -127,6 +128,15 @@ def ConLLiter(directory, extension):
             with open2(f) as fp:
                 for sentence in fp:
                     yield sentence, section
+
+
+def dump_corpus(file, corpus):
+    with open(file, "w") as fp:
+        for c in corpus:
+            for word in c:
+                print >> fp, str(word)
+
+            print >> fp
 
 
 if __name__ == "__main__":
