@@ -2,7 +2,6 @@ library(sqldf)
 library(fpc)
 TOPN = 80000
 german_embeddings <- read.delim("~/uparse/german.embeddings", nrows= TOPN,header=F,col.names=c("word","f1","f2","f3","f4","f5","f6","f7","f8","f9","f10","f11","f12","f13","f14","f15","f16","f17","f18","f19","f20","f21","f22","f23","f24","f25"),sep='\t',blank.lines.skip=TRUE,quote = "",colClasses=c("character",rep("numeric",25)))
-#german_embeddings@row.names = german.embeddings$word
 german_embeddings_features = subset(german_embeddings, select=c("f1","f2","f3","f4","f5","f6","f7","f8","f9","f10","f11","f12","f13","f14","f15","f16","f17","f18","f19","f20","f21","f22","f23","f24","f25"))
 
 #german.embeddings.matrix = scale(german.embeddings)
@@ -14,15 +13,16 @@ ncluster = max(ds$cluster)
 german_embeddings$cluster = predict(ds, german_embeddings_features, german_embeddings_features)
 german_embeddings_filtered= sqldf("select word,cluster from german_embeddings where cluster != 0 order by cluster, word")
 
-d <- dist(german.embeddings.matrix)
-library(cluster)
+MinPts = 24
+init = c(0.4)
 
-silresult = rep(0.0, 50)
-
-for (n in seq(2,50,2)){
-  cl <- kmeans(german.embeddings.matrix,centers=n,iter.max=300,nstart=5)
-  s <- silhouette(cl$cluster,d)
-  silresult[n] = summary(s)$avg.width
+optimDBSCAN <- function (eps) {
+  ds <- dbscan(german_embeddings_features, eps, MinPts,showplot=FALSE)
+  ncluster = max(ds$cluster)
+  s <- summary(silhouette(ds$cluster,d))[4]
+  #message(ncluster, " for eps=",eps, " and MinPts=",MinPts, ". Silhouette is ",  s)
+  
+  (s$avg.width*-1.)
 }
 
 nopt = which.max(silresult)
@@ -42,4 +42,9 @@ wssplot <- function(data, nc=50, seed=1234){
        ylab="Within groups sum of squares",)
 }
 
-#wssplot(german.embeddings)
+#german_embeddings$cluster = predict(ds, german_embeddings_features, german_embeddings_features)
+#german_embeddings_filtered= sqldf("select word,cluster from german_embeddings where cluster != 0 order by cluster, word")
+
+#cl <- kmeans(german.embeddings.matrix,centers=nopt,iter.max=300,nstart=1000)
+#s <- silhouette(cl$cluster,d)
+#plot(s)

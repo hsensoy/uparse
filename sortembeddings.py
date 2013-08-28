@@ -33,4 +33,3 @@ if __name__ == "__main__":
     for word,freq in sorted(words.iteritems(), key=lambda x: x[1], reverse=True):
         if word in embeddings:
             print >> sys.stdout, "\t".join(embeddings[word])
-

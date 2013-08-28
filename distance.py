@@ -51,4 +51,3 @@ for i in range(n):
 
     sys.stdout.write("\n".join(buffer))
     sys.stdout.write("\n")
-
