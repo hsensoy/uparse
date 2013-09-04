@@ -1,5 +1,13 @@
 ## uparse
 
+### maltbundle.tar.gz
+`maltbundle.tar.gz` is a super bundle including (on top of standard MaltOptimizer content)
+* `Makefile` to perform an experiment using MaltOptimizer
+*  `malteval-recent` to perform in place evaluation
+* `maltoption.py` to parse `phase3_optFile.txt` as parameter to Maltparser
+* `maltparser-recent` to perform in place parsing
+* `noextension.py` to remove first right most file suffix.
+
 
 ### Dependency Parsing Experiments using Makefile
 `Makefile` included in `uparse` directory allows you to perform several dependency parsing experiments using `MaltOptimizer` and `Maltparser`

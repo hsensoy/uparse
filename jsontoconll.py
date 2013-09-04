@@ -56,7 +56,7 @@ if __name__ == "__main__":
             if args.tagattribute:
                 w.setpostag(getattr(w, args.tagattribute))
             if args.featsattribute:
-                setattr(w, '_feats', 'case=%s'%getattr(w, args.featsattribute))
+                setattr(w, '_feats', 'f0=%s'%getattr(w, args.featsattribute))
 
             print >> sys.stdout, str(w)
 
